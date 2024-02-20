@@ -1,5 +1,15 @@
 body {
     margin: 0;
-    /* background-image: url(./images/giphy.gif);
-    background-size: cover; */
+    background-image: url(/images/giphy.gif);
+    background-size: cover;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    > .game-container {
+        width: 80vh;
+        height: 80vh;
+        background-color: aliceblue;
+    }
 }

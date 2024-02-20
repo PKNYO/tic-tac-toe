@@ -1,9 +1,9 @@
 const GameBoard = (function() {
     const board = 
         [
-            ["X", "X", "O"],
             ["", "", ""],
-            ["O", "X", ""]
+            ["", "", ""],
+            ["", "", ""]
         ];
 
     const displayBoard = function() {
@@ -17,6 +17,15 @@ const GameBoard = (function() {
         } else {
             console.log("Please, position your marker on an empty case.")
         }
+    }
+
+    const resetBoard = function() {
+        board = 
+        [
+            ["", "", ""],
+            ["", "", ""],
+            ["", "", ""]
+        ];
     }
 
     const validMove = function(xPosition, yPosition) {
