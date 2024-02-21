@@ -1,4 +1,4 @@
-const GameBoard = function(player1, player2) {
+const GameBoard = (function() {
     const board = 
         [
             ["", "", ""],
@@ -50,10 +50,12 @@ const GameBoard = function(player1, player2) {
         return false;
     }
 
-    return {board, positionMarker};
-};
+    return {board, positionMarker, player1, player2};
+});
 
 const DisplayController = (function() {
+    let turn = 1;                                        //if 1 player one turn, if 2, player 2
+
     const player = function(name, marker) {
         return {name, marker}
     }
@@ -64,6 +66,7 @@ const DisplayController = (function() {
 
         for (let i = 0; i < 9; i++) {
             const gridCell = document.createElement("div");
+            const coord = [];
 
             gridCell.classList.add("grid-cell");
             gridCell.setAttribute("data", "cell");
@@ -71,10 +74,28 @@ const DisplayController = (function() {
             gameContainer.appendChild(gridCell);
 
             if (i == 1 || i == 7 || i == 4) gridCell.style.borderLeft = "solid 2px white";
-            if (i == 1 || i == 7 || i == 4) gridCell.style.borderRight = "solid 2px white";
+            if (i == 1 || i == 7 || i == 4) gridCell.style.borderRight = "solid 2px white";
             if (i == 3 || i == 4 || i == 5) gridCell.style.borderTop = "solid 2px white";
-            if (i == 3 || i == 4 || i == 5) gridCell.style.borderBottom = "solid 2px white";
+            if (i == 3 || i == 4 || i == 5) gridCell.style.borderBottom = "solid 2px white";
             
+            gridCell.addEventListener("mouseenter", (e) => {
+                if (e.target.hasChildNodes()) return
+
+                const marker = document.createElement("div");
+
+                e.target.appendChild(marker);
+                marker.classList.add("premarker")
+
+                if (turn == 1) {
+                    marker.textContent = "X";
+                }
+                if (turn == 2) {
+                    marker.textContent = "O";
+                }
+                gridCell.addEventListener("mouseleave", (e) => {
+                    e.target.removeChild(marker);
+                })
+            })
         }
     };
 
@@ -92,6 +113,5 @@ startButton.addEventListener("click", () => {
     if (playerOneInput.value === "" || playerTwoInput.value === "") {
         return alert("Enter two players")
     }
-    GameBoard(DisplayController.player(playerOneInput.value, "X"), DisplayController.player(playerTwoInput.value, "O"));
     DisplayController.createBoard();
 })
