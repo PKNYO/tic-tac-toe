@@ -2,7 +2,7 @@
 
 body {
     margin: 0;
-    background-image: url(/images/giphy.gif);
+    background-image: url(./images/giphy.gif);
     background-size: cover;
     height: 100vh;
     display: flex;
