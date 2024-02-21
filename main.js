@@ -1,14 +1,10 @@
-const GameBoard = (function() {
+const GameBoard = function(player1, player2) {
     const board = 
         [
             ["", "", ""],
             ["", "", ""],
             ["", "", ""]
         ];
-
-    const displayBoard = function() {
-        console.table(this.board);
-    };
 
     const positionMarker = function(marker, xPosition, yPosition) {
         if (validMove(xPosition, yPosition)) {
@@ -54,5 +50,48 @@ const GameBoard = (function() {
         return false;
     }
 
-    return {board, displayBoard, positionMarker};
-})();
+    return {board, positionMarker};
+};
+
+const DisplayController = (function() {
+    const player = function(name, marker) {
+        return {name, marker}
+    }
+
+    const createBoard = function() {
+        gameContainer.innerHTML = "";
+        gameContainer.classList.add("grid-container")
+
+        for (let i = 0; i < 9; i++) {
+            const gridCell = document.createElement("div");
+
+            gridCell.classList.add("grid-cell");
+            gridCell.setAttribute("data", "cell");
+            gridCell.dataset.cell = i;
+            gameContainer.appendChild(gridCell);
+
+            if (i == 1 || i == 7 || i == 4) gridCell.style.borderLeft = "solid 2px white";
+            if (i == 1 || i == 7 || i == 4) gridCell.style.borderRight = "solid 2px white";
+            if (i == 3 || i == 4 || i == 5) gridCell.style.borderTop = "solid 2px white";
+            if (i == 3 || i == 4 || i == 5) gridCell.style.borderBottom = "solid 2px white";
+            
+        }
+    };
+
+    return {player, createBoard}
+})()
+
+// GLOBAL
+
+const playerOneInput = document.querySelector("#player1");
+const playerTwoInput = document.querySelector("#player2");
+const startButton = document.querySelector("#start-button");
+const gameContainer = document.querySelector(".game-container");
+
+startButton.addEventListener("click", () => {
+    if (playerOneInput.value === "" || playerTwoInput.value === "") {
+        return alert("Enter two players")
+    }
+    GameBoard(DisplayController.player(playerOneInput.value, "X"), DisplayController.player(playerTwoInput.value, "O"));
+    DisplayController.createBoard();
+})
