@@ -1,5 +1,5 @@
 const GameBoard = (function() {
-    const board = 
+    let board = 
         [
             ["", "", ""],
             ["", "", ""],
@@ -7,7 +7,7 @@ const GameBoard = (function() {
         ];
 
     const resetBoard = function() {
-        board = 
+        this.board = 
         [
             ["", "", ""],
             ["", "", ""],
@@ -51,12 +51,13 @@ const GameBoard = (function() {
         return false;
     }
 
-    return {board, positionMarker, isWinner};
+    return {board, positionMarker, isWinner, resetBoard};
 })();
 
 const DisplayController = (function() {
     let turn = null;
-    let lastTurn = null;
+    let playerOne = null;
+    let playerTwo = null;
 
     const createBoard = function() {
         gameContainer.innerHTML = "";
@@ -94,11 +95,11 @@ const DisplayController = (function() {
                 let currentPlayer = (this.turn == "playerOne") ? this.playerOne : this.playerTwo;
 
                 GameBoard.positionMarker(currentPlayer.marker, x, y);
-                this.lastTurn = this.turn;
-                this.turn = (this.turn == "playerTwo") ? "playerOne" : "playerTwo";
                 populateBoard();
 
-                if (GameBoard.isWinner() == true) { displayWinner(this.lastTurn) };
+                if (GameBoard.isWinner() == true) { displayWinner(currentPlayer) };
+
+                this.turn = (this.turn == "playerTwo") ? "playerOne" : "playerTwo";
             })
         }
     };
@@ -120,13 +121,36 @@ const DisplayController = (function() {
         }
     }
 
-    const displayWinner = function() {
-        const winner = (this.lastTurn == "playerOne") ? this.playerOne : this.playerTwo;
+    const displayWinner = function(winner) {
+        const body = document.querySelector("body");
+        const shadowPage = document.createElement("div");
+        const winnerText = document.createElement("p");
+        const restartButton = document.createElement("button");
+        
+        body.appendChild(shadowPage);
+        shadowPage.appendChild(winnerText);
+        shadowPage.appendChild(restartButton);
 
-        console.log(this.lastTurn)
+        shadowPage.classList.add("shadow");
+        restartButton.classList.add("restart-button");
+
+        winnerText.textContent = `${winner.name} WINS!`;
+        restartButton.textContent = "Play Again!";
+
+        restartButton.addEventListener("click", () => {
+            playAgain();
+        })
     }
 
-    return {createBoard, populateBoard}
+    const playAgain = function() {
+        const body = document.querySelector("body");
+
+        body.lastChild.remove();
+        GameBoard.resetBoard();
+        createBoard();
+    }
+
+    return {createBoard, populateBoard, playerOne, playerTwo}
 })()
 
 const player = function(name, marker) {
@@ -141,7 +165,7 @@ const startButton = document.querySelector("#start-button");
 const gameContainer = document.querySelector(".game-container");
 
 function playRound(player1, player2) {
-    let playerTurn = Math.floor(Math.random() * 2 + 1);
+    let playerTurn = Math.floor(Math.random() * 2 + 1);                // random between 1 and 2 to choose who starts
 
     DisplayController.turn = (playerTurn == 1) ? "playerOne" : "playerTwo";
 
