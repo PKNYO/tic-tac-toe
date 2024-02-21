@@ -6,15 +6,6 @@ const GameBoard = (function() {
             ["", "", ""]
         ];
 
-    const positionMarker = function(marker, xPosition, yPosition) {
-        if (validMove(xPosition, yPosition)) {
-            board[yPosition][xPosition] = marker;
-            if (isWinner()) return console.log("last player is the winner");
-        } else {
-            console.log("Please, position your marker on an empty case.")
-        }
-    }
-
     const resetBoard = function() {
         board = 
         [
@@ -22,6 +13,15 @@ const GameBoard = (function() {
             ["", "", ""],
             ["", "", ""]
         ];
+    }
+
+    const positionMarker = function(marker, xPosition, yPosition) {
+        if (validMove(xPosition, yPosition)) {
+            board[yPosition][xPosition] = marker;
+            if (isWinner()) return console.log("last player is the winner");
+        } else {
+            console.log("Please, position your marker on an empty case.")
+        }
     }
 
     const validMove = function(xPosition, yPosition) {
@@ -34,8 +34,9 @@ const GameBoard = (function() {
         let secondDiagonalResult = "";
 
         for (let x = 0; x < 3; x++) {
+            columnResult = ""
             for (let y = 0; y < 3; y++) {
-                if (board[y].join("") === "XXX" || board[y].flat() === "OOO") return true;
+                if (board[y].join("") === "XXX" || board[y].join("") === "OOO") return true;
                 columnResult += board[y][x];
                 if (x == y) firstDiagonalResult += board[y][x];
                 if (x == 0 && y == 2) secondDiagonalResult += board[y][x];
@@ -50,15 +51,12 @@ const GameBoard = (function() {
         return false;
     }
 
-    return {board, positionMarker, player1, player2};
-});
+    return {board, positionMarker, isWinner};
+})();
 
 const DisplayController = (function() {
-    let turn = 1;                                        //if 1 player one turn, if 2, player 2
-
-    const player = function(name, marker) {
-        return {name, marker}
-    }
+    let turn = null;
+    let lastTurn = null;
 
     const createBoard = function() {
         gameContainer.innerHTML = "";
@@ -66,41 +64,74 @@ const DisplayController = (function() {
 
         for (let i = 0; i < 9; i++) {
             const gridCell = document.createElement("div");
-            const coord = [];
+            const markerDiv = document.createElement("div");
 
             gridCell.classList.add("grid-cell");
-            gridCell.setAttribute("data", "cell");
+            markerDiv.classList.add("marker")
             gridCell.dataset.cell = i;
             gameContainer.appendChild(gridCell);
+            gridCell.appendChild(markerDiv);
 
             if (i == 1 || i == 7 || i == 4) gridCell.style.borderLeft = "solid 2px white";
             if (i == 1 || i == 7 || i == 4) gridCell.style.borderRight = "solid 2px white";
             if (i == 3 || i == 4 || i == 5) gridCell.style.borderTop = "solid 2px white";
             if (i == 3 || i == 4 || i == 5) gridCell.style.borderBottom = "solid 2px white";
-            
-            gridCell.addEventListener("mouseenter", (e) => {
-                if (e.target.hasChildNodes()) return
 
-                const marker = document.createElement("div");
+            gridCell.addEventListener("click", (e) => {
+                if (e.target.firstChild.textContent !== "") return
 
-                e.target.appendChild(marker);
-                marker.classList.add("premarker")
+                let x = 0;
+                let y = 0;
+                const position = e.target.dataset.cell
 
-                if (turn == 1) {
-                    marker.textContent = "X";
-                }
-                if (turn == 2) {
-                    marker.textContent = "O";
-                }
-                gridCell.addEventListener("mouseleave", (e) => {
-                    e.target.removeChild(marker);
-                })
+                    if (position < 3) y = 0;
+                    if (position > 5) y = 2;
+                    if (position > 2 && position < 6) y = 1;
+                    if (position == 0 || position == 3 || position == 6) x = 0;
+                    if (position == 1 || position == 4 || position == 7) x = 1;
+                    if (position == 2 || position == 5 || position == 8) x = 2;
+
+                let currentPlayer = (this.turn == "playerOne") ? this.playerOne : this.playerTwo;
+
+                GameBoard.positionMarker(currentPlayer.marker, x, y);
+                this.lastTurn = this.turn;
+                this.turn = (this.turn == "playerTwo") ? "playerOne" : "playerTwo";
+                populateBoard();
+
+                if (GameBoard.isWinner() == true) { displayWinner(this.lastTurn) };
             })
         }
     };
 
-    return {player, createBoard}
+    const populateBoard = function() {
+        for (let position = 0; position < 9; position++) {
+            const gridCase = document.querySelector(`div[data-cell="${position}"]`)
+            let x = 0;
+            let y = 0;
+
+            if (position < 3) y = 0;
+            if (position > 5) y = 2;
+            if (position > 2 && position < 6) y = 1;
+            if (position == 0 || position == 3 || position == 6) x = 0;
+            if (position == 1 || position == 4 || position == 7) x = 1;
+            if (position == 2 || position == 5 || position == 8) x = 2;
+
+            gridCase.firstChild.textContent = GameBoard.board[y][x];
+        }
+    }
+
+    const displayWinner = function() {
+        const winner = (this.lastTurn == "playerOne") ? this.playerOne : this.playerTwo;
+
+        console.log(this.lastTurn)
+    }
+
+    return {createBoard, populateBoard}
 })()
+
+const player = function(name, marker) {
+    return {name, marker}
+}
 
 // GLOBAL
 
@@ -109,9 +140,19 @@ const playerTwoInput = document.querySelector("#player2");
 const startButton = document.querySelector("#start-button");
 const gameContainer = document.querySelector(".game-container");
 
+function playRound(player1, player2) {
+    let playerTurn = Math.floor(Math.random() * 2 + 1);
+
+    DisplayController.turn = (playerTurn == 1) ? "playerOne" : "playerTwo";
+
+    DisplayController.playerOne = player1;
+    DisplayController.playerTwo = player2;
+    DisplayController.createBoard();
+}
+
 startButton.addEventListener("click", () => {
     if (playerOneInput.value === "" || playerTwoInput.value === "") {
-        return alert("Enter two players")
+        return alert("Enter two players");
     }
-    DisplayController.createBoard();
+    playRound(player(playerOneInput.value, "X"), player(playerTwoInput.value, "O"));
 })
