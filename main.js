@@ -69,9 +69,28 @@ const DisplayController = (function() {
         players.playerTwo = player2;
     }
 
+    const displayTurn = function() {
+        let currentPlayer = (turn == "playerOne") ? players.playerOne : players.playerTwo;
+
+        if (!document.querySelector(".turn-text")) {
+            const body = document.querySelector("body");
+            const turnText = document.createElement("p");
+    
+            body.appendChild(turnText);
+            turnText.classList.add("turn-text");
+            turnText.textContent = `${currentPlayer.name}, It's your turn!`;
+        } else {
+            const turnText = document.querySelector(".turn-text");
+
+            turnText.textContent = `${currentPlayer.name}, It's your turn!`;
+        }
+    }
+
     const createBoard = function() {
         gameContainer.innerHTML = "";
-        gameContainer.classList.add("grid-container")
+        gameContainer.classList.add("grid-container");
+
+        displayTurn();
 
         for (let i = 0; i < 9; i++) {
             const gridCell = document.createElement("div");
@@ -111,6 +130,8 @@ const DisplayController = (function() {
                 if (GameBoard.isWinner() == "draft") { displayWinner("draft")}
 
                 turn = (turn == "playerTwo") ? "playerOne" : "playerTwo";
+
+                displayTurn();
             })
         }
     };
@@ -159,7 +180,11 @@ const DisplayController = (function() {
 
     const playAgain = function() {
         const body = document.querySelector("body");
+        let playerTurn = Math.floor(Math.random() * 2 + 1);                // random between 1 and 2 to choose who starts
+    
+        DisplayController.setTurn((playerTurn == 1) ? "playerOne" : "playerTwo");
 
+        body.lastChild.remove();
         body.lastChild.remove();
         createBoard();
         GameBoard.setBoard(
